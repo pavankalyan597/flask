@@ -10,6 +10,17 @@ def get_field_names(table):
     keys = columns.fetchall()
     return keys,cursor,con
 
+def fetching_data(cursor,table,keys):
+    rows = cursor.execute(f'select * from {table}')
+    values = rows.fetchall()
+    data = []
+    for tup in values:
+        result = {}
+        for num in range(len(keys)):
+            result[keys[num][1]] = tup[num]
+        data.append(result)
+    return data
+
 #endpoint to see tables in db
 @app.route('/api/db/tables/',methods = ['GET'])
 def show_tables():
@@ -31,13 +42,8 @@ def table_details(table):
     query = flask.request.args
     data = []
     if not query:
-        rows = cursor.execute(f'select * from {table}')
-        values = rows.fetchall()
-        for tup in values:
-            result = {}
-            for num in range(len(keys)):
-                result[keys[num][1]] = tup[num]
-            data.append(result)
+        data = fetching_data(cursor,table,keys)
+        return flask.jsonify(data)
     else:
         query_keys = query.keys()
         for key in list(query_keys):
@@ -56,14 +62,7 @@ def delete_row(table,name):
     keys, cursor, con = get_field_names(table)
     cursor.execute(f'delete from {table} where name = "{name}"')
     con.commit()
-    rows = cursor.execute(f'select * from {table}')
-    values = rows.fetchall()
-    data = []
-    for tup in values:
-        result = {}
-        for num in range(len(keys)):
-            result[keys[num][1]] = tup[num]
-        data.append(result)
+    data = fetching_data(cursor,table,keys)
     return flask.jsonify(data)
 
 @app.route('/api/db/tables/<string:table>/add',methods = ['POST'])
@@ -75,14 +74,7 @@ def add_item(table):
     query = query[:len(query) - 1] + ')'
     cursor.execute(f'{query}')
     con.commit()
-    rows = cursor.execute(f'select * from {table}')
-    values = rows.fetchall()
-    data = []
-    for tup in values:
-        result = {}
-        for num in range(len(keys)):
-            result[keys[num][1]] = tup[num]
-        data.append(result)
+    data = fetching_data(cursor,table,keys)
     return flask.jsonify(data)
 
 app.run(debug=True)
