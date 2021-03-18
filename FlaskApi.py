@@ -12,7 +12,7 @@ def get_field_names(table):
     return keys,cursor,con
 
 #fetching data from the tables
-def fetching_data(cursor,table,keys):
+def fetching_data(cursor,table,keys,con):
     rows = cursor.execute(f'select * from {table}')
     values = rows.fetchall()
     data = []
@@ -21,6 +21,7 @@ def fetching_data(cursor,table,keys):
         for num in range(len(keys)):
             result[keys[num][1]] = tup[num]
         data.append(result)
+    con.close()
     return data
 
 #endpoint to see tables in db
@@ -46,8 +47,7 @@ def table_details(table):
     query = flask.request.args
     data = []
     if not query:
-        data = fetching_data(cursor,table,keys)
-        return flask.jsonify(data)
+        data = fetching_data(cursor,table,keys,con)
     else:
         query_keys = query.keys()
         for key in list(query_keys):
@@ -58,7 +58,7 @@ def table_details(table):
             for num in range(len(keys)):
                 result[keys[num][1]] = tup[num]
             data.append(result)
-    con.close()
+        con.close()
     return flask.jsonify(data)
 
 
@@ -68,7 +68,7 @@ def delete_row(table,name):
     keys, cursor, con = get_field_names(table)
     cursor.execute(f'delete from {table} where name = "{name}"')
     con.commit()
-    data = fetching_data(cursor,table,keys)
+    data = fetching_data(cursor,table,keys,con)
     return flask.jsonify(data)
 
 
@@ -82,7 +82,7 @@ def add_item(table):
     query = query[:len(query) - 1] + ')'
     cursor.execute(f'{query}')
     con.commit()
-    data = fetching_data(cursor,table,keys)
+    data = fetching_data(cursor,table,keys,con)
     return flask.jsonify(data)
 
 app.run(debug=True)
