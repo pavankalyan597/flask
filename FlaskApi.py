@@ -3,6 +3,7 @@ import sqlite3
 
 app = flask.Flask(__name__)
 
+#connecting to db and return table fields
 def get_field_names(table):
     con = sqlite3.connect('flask.db')
     cursor = con.cursor()
@@ -10,6 +11,7 @@ def get_field_names(table):
     keys = columns.fetchall()
     return keys,cursor,con
 
+#fetching data from the tables
 def fetching_data(cursor,table,keys):
     rows = cursor.execute(f'select * from {table}')
     values = rows.fetchall()
@@ -36,6 +38,8 @@ def show_tables():
     con.close()
     return flask.jsonify(tables)
 
+
+#retriving data from specific table and specific column
 @app.route('/api/db/tables/<string:table>/',methods = ['GET'])
 def table_details(table):
     keys,cursor,con = get_field_names(table)
@@ -57,6 +61,8 @@ def table_details(table):
     con.close()
     return flask.jsonify(data)
 
+
+#deleting a row from tables
 @app.route('/api/tables/<string:table>/<string:name>',methods = ['DELETE' ])
 def delete_row(table,name):
     keys, cursor, con = get_field_names(table)
@@ -65,6 +71,8 @@ def delete_row(table,name):
     data = fetching_data(cursor,table,keys)
     return flask.jsonify(data)
 
+
+#inserting new data to tables
 @app.route('/api/db/tables/<string:table>/add',methods = ['POST'])
 def add_item(table):
     keys, cursor, con = get_field_names(table)
