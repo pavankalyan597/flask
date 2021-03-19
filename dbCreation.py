@@ -68,5 +68,7 @@ cursor = con.cursor()
 # print(result.fetchall())
 # con.close()
 
-
-cursor.execute('insert into games values("prince of persia sands of time","ubi soft",2014,)')
+query = 'update tvShows set platform = "HBO Max" where name = "max"'
+cursor.execute(query)
+result = cursor.execute('select * from tvShows')
+print(result.fetchall())

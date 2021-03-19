@@ -85,4 +85,18 @@ def add_item(table):
     data = fetching_data(cursor,table,keys,con)
     return flask.jsonify(data)
 
+#updating exisitng data in db
+@app.route('/api/db/tables/<string:table>/update/<string:name>',methods = ['PUT'])
+def update_table(table,name):
+    _keys,cursor,con = get_field_names(table)
+    keys = flask.request.json.keys()
+    query = f'update {table} set '
+    for key in keys:
+        query += key + f' = "{flask.request.json[key]}",'
+    query = query[:len(query) - 1] + f' where name = "{name}"'
+    cursor.execute(query)
+    con.commit()
+    data = fetching_data(cursor, table, _keys, con)
+    return flask.jsonify(data)
+
 app.run(debug=True)
